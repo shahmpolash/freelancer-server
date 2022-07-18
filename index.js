@@ -26,6 +26,7 @@ async function run() {
         const reviewCollection = client.db('freelancerDB').collection('reviews');
         const withdrawCollection = client.db('freelancerDB').collection('withdraws');
         const transactionCollection = client.db('freelancerDB').collection('transactions');
+        const messageCollection = client.db('freelancerDB').collection('messages');
 
         app.get('/service', async (req, res) => {
             const query = {};
@@ -206,6 +207,8 @@ async function run() {
                 $set: {
                     status: updateStatus.status,
                     releaseStatus: updateStatus.release,
+                    runningOrCompleted: updateStatus.runningOrFinished,
+                    
 
                 }
             };
@@ -231,6 +234,26 @@ async function run() {
             res.send(result);
 
         });
+        app.put('/clientorderrequirement/:id', async (req, res) => {
+            const id = req.params.id;
+            const clientRequirementStatus = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    clientUpdated: clientRequirementStatus.clientUpdatedRequirement,
+                    requpdated: clientRequirementStatus.requpdated,
+ 
+                }
+            };
+
+            const result = await orderCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+
+
+
         app.put('/myorder/:id', async (req, res) => {
             const id = req.params.id;
             const updateStatus = req.body;
@@ -239,6 +262,7 @@ async function run() {
             const updatedDoc = {
                 $set: {
                     status: updateStatus.status,
+                    runningOrCompleted: updateStatus.runningOrFinished,
                 }
             };
 
@@ -423,6 +447,26 @@ async function run() {
             const clientProfileReview = await cursor.toArray();
             res.send(clientProfileReview);
         });
+
+
+        /****
+         * 
+         * Messages
+         * 
+         * ****/
+         app.post('/message/', async (req, res) => {
+            const newMessage = req.body;
+            const result = await messageCollection.insertOne(newMessage);
+            res.send(result);
+        });
+
+        app.get('/messages', async (req, res) => {
+            const query = {};
+            const cursor = messageCollection.find(query);
+            const messages = await cursor.toArray();
+            res.send(messages);
+        });
+        
 
     }
     finally {
