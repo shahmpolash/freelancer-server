@@ -454,7 +454,7 @@ async function run() {
          * Messages
          * 
          * ****/
-         app.post('/message/', async (req, res) => {
+         app.post('/message', async (req, res) => {
             const newMessage = req.body;
             const result = await messageCollection.insertOne(newMessage);
             res.send(result);
