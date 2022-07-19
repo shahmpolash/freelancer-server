@@ -321,7 +321,6 @@ async function run() {
 
             const result = await orderCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
-
         });
 
         /***
@@ -366,7 +365,6 @@ async function run() {
             const updatedDoc = {
                 $set: {
                     status: withdrawStatus.status,
-
                 }
             };
 
@@ -465,6 +463,29 @@ async function run() {
             const cursor = messageCollection.find(query);
             const messages = await cursor.toArray();
             res.send(messages);
+        });
+
+        app.get('/message/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const message = await messageCollection.findOne(query);
+            res.send(message)
+        });
+
+        app.put('/message/:id', async (req, res) => {
+            const id = req.params.id;
+            const messageStatus = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    messageStatus: messageStatus.messageStatus,
+                   
+                }
+            };
+
+            const result = await messageCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
         });
         
 
