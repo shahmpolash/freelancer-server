@@ -27,6 +27,7 @@ async function run() {
         const withdrawCollection = client.db('freelancerDB').collection('withdraws');
         const transactionCollection = client.db('freelancerDB').collection('transactions');
         const messageCollection = client.db('freelancerDB').collection('messages');
+        const replyMessageCollection = client.db('freelancerDB').collection('replies');
 
         app.get('/service', async (req, res) => {
             const query = {};
@@ -119,6 +120,41 @@ async function run() {
             res.send(freelancerprofile);
         });
 
+        app.put('/freelancer/:id', async (req, res) => {
+            const id = req.params.id;
+            const freelancer = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    name: freelancer.name,
+                    heading: freelancer.heading,
+                    profile: freelancer.profile,
+                    about: freelancer.about,
+                    location: freelancer.location,
+                    onpageseo: freelancer.onpageseo,
+                    offpageseo: freelancer.offpageseo,
+                    technicalseo: freelancer.technicalseo,
+                    lead: freelancer.lead,
+                    social: freelancer.social,
+                    experience: freelancer.experience,
+                    available: freelancer.available,
+                    fb: freelancer.fb,
+                    twitter: freelancer.twitter,
+                    linkedin: freelancer.linkedin,
+                    marketplace: freelancer.marketplace,
+                    projectcompleted: freelancer.projectcompleted,
+                    totalreviews: freelancer.totalreviews,
+                    profilelink: freelancer.profilelink,
+ 
+                }
+            };
+
+            const result = await freelancerCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+
 
         /*****
          * Client Profile
@@ -142,6 +178,29 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const client = await clientCollection.findOne(query);
             res.send(client)
+        });
+
+        app.put('/client/:id', async (req, res) => {
+            const id = req.params.id;
+            const client = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    clientName: client.clientName,
+                    clientLocation: client.clientLocation,
+                    clientAbout: client.clientAbout,
+                    clientProfile: client.clientProfile,
+                    clientFB: client.clientFB,
+                    clientTwitter: client.clientTwitter,
+                    clientLinkedin: client.clientLinkedin,
+ 
+                }
+            };
+
+            const result = await clientCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
         });
 
         app.get('/clientprofile', async (req, res) => {
@@ -241,8 +300,8 @@ async function run() {
             const options = { upsert: true };
             const updatedDoc = {
                 $set: {
-                    clientUpdated: clientRequirementStatus.clientUpdatedRequirement,
-                    requpdated: clientRequirementStatus.requpdated,
+                    clientUpdated: clientRequirementStatus.requirement,
+                    reqUpdated: clientRequirementStatus.reqUpdated,
  
                 }
             };
@@ -472,22 +531,37 @@ async function run() {
             res.send(message)
         });
 
+
         app.put('/message/:id', async (req, res) => {
             const id = req.params.id;
-            const messageStatus = req.body;
+            const status = req.body;
             const filter = { _id: ObjectId(id) };
             const options = { upsert: true };
             const updatedDoc = {
                 $set: {
-                    messageStatus: messageStatus.messageStatus,
-                   
+                    messageStatus: status.messageStatus,
                 }
             };
 
             const result = await messageCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
+
         });
-        
+      
+      
+        app.post('/reply', async (req, res) => {
+            const newReply = req.body;
+            const result = await replyMessageCollection.insertOne(newReply);
+            res.send(result);
+        });
+
+        app.get('/replies', async (req, res) => {
+            const query = {};
+            const cursor = replyMessageCollection.find(query);
+            const replies = await cursor.toArray();
+            res.send(replies);
+        });
+          
 
     }
     finally {
