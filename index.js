@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
 const app = express();
@@ -28,6 +29,7 @@ async function run() {
         const transactionCollection = client.db('freelancerDB').collection('transactions');
         const messageCollection = client.db('freelancerDB').collection('messages');
         const replyMessageCollection = client.db('freelancerDB').collection('replies');
+        const adminCollection = client.db('freelancerDB').collection('admins');
 
         app.get('/service', async (req, res) => {
             const query = {};
@@ -88,6 +90,43 @@ async function run() {
 
         });
 
+        app.put('/service-edit/:id', async (req, res) => {
+            const id = req.params.id;
+            const serviceUpdate = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    title: serviceUpdate.title,
+                    price: serviceUpdate.price,
+                    img: serviceUpdate.img,
+                    details: serviceUpdate.details,
+                   
+                }
+            };
+
+            const result = await serviceCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+
+
+        /****
+         * Admin Account
+         * ****/
+
+         app.post('/admin', async (req, res) => {
+            const newAdmin = req.body;
+            const result = await adminCollection.insertOne(newAdmin);
+            res.send(result);
+        });
+        app.get('/admin', async (req, res) => {
+            const query = {};
+            const cursor = adminCollection.find(query);
+            const admin = await cursor.toArray();
+            res.send(admin);
+        });
+
         /**
          * Freelancer Profile
         **/
@@ -146,6 +185,8 @@ async function run() {
                     projectcompleted: freelancer.projectcompleted,
                     totalreviews: freelancer.totalreviews,
                     profilelink: freelancer.profilelink,
+                    status: freelancer.status,
+                    verifiedStatus: freelancer.verifiedStatus,
  
                 }
             };
@@ -561,6 +602,20 @@ async function run() {
             const replies = await cursor.toArray();
             res.send(replies);
         });
+
+        app.post('/create-payment-intent' , async(req, res) =>{
+            const order = req.body;
+            const serviceprice = order.serviceprice;
+            const amount = serviceprice*100;
+            const paymentIntent = await stripe.paymentIntents.create({
+              amount : amount,
+              currency: 'usd',
+              payment_method_types:['card']
+            });
+            res.send({clientSecret: paymentIntent.client_secret})
+        });
+
+
           
 
     }
