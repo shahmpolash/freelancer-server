@@ -30,6 +30,10 @@ async function run() {
         const messageCollection = client.db('freelancerDB').collection('messages');
         const replyMessageCollection = client.db('freelancerDB').collection('replies');
         const adminCollection = client.db('freelancerDB').collection('admins');
+        const paymentsettingCollection = client.db('freelancerDB').collection('paymentsetting');
+        const contactCollection = client.db('freelancerDB').collection('contact');
+        const footerCollection = client.db('freelancerDB').collection('footer');
+        const aboutCollection = client.db('freelancerDB').collection('about');
 
         app.get('/service', async (req, res) => {
             const query = {};
@@ -89,6 +93,22 @@ async function run() {
             res.send(result);
 
         });
+        app.put('/service-unpublish/:id', async (req, res) => {
+            const id = req.params.id;
+            const publishStatus = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    publishStatus: publishStatus.status,
+                   
+                }
+            };
+
+            const result = await serviceCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
 
         app.put('/service-edit/:id', async (req, res) => {
             const id = req.params.id;
@@ -125,6 +145,44 @@ async function run() {
             const cursor = adminCollection.find(query);
             const admin = await cursor.toArray();
             res.send(admin);
+        });
+        app.get('/payment-setting', async (req, res) => {
+            const query = {};
+            const cursor = paymentsettingCollection.find(query);
+            const paymentSetting = await cursor.toArray();
+            res.send(paymentSetting);
+        });
+
+        app.post('/payment-setting', async (req, res) => {
+            const paymentSetting = req.body;
+            const result = await paymentsettingCollection.insertOne(paymentSetting);
+            res.send(result);
+        });
+
+        app.get('/payment-setting/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const paymentSetting = await paymentsettingCollection.findOne(query);
+            res.send(paymentSetting)
+        });
+
+
+        app.put('/payment-setting/:id', async (req, res) => {
+            const id = req.params.id;
+            const paymentSettingUpdate = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    paypalEmail: paymentSettingUpdate.paypalEmail,
+                    commission: paymentSettingUpdate.commission,
+ 
+                }
+            };
+
+            const result = await paymentsettingCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
         });
 
         /**
@@ -187,6 +245,39 @@ async function run() {
                     profilelink: freelancer.profilelink,
                     status: freelancer.status,
                     verifiedStatus: freelancer.verifiedStatus,
+ 
+                }
+            };
+
+            const result = await freelancerCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+        app.put('/freelancer-status/:id', async (req, res) => {
+            const id = req.params.id;
+            const providerApprove = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    status: providerApprove.status,
+ 
+                }
+            };
+
+            const result = await freelancerCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+        app.put('/freelancer-verifystatus/:id', async (req, res) => {
+            const id = req.params.id;
+            const providerApprove = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    
+                    verifiedStatus: providerApprove.verifiedStatus,
  
                 }
             };
@@ -363,6 +454,7 @@ async function run() {
                 $set: {
                     status: updateStatus.status,
                     runningOrCompleted: updateStatus.runningOrFinished,
+                    
                 }
             };
 
@@ -370,6 +462,26 @@ async function run() {
             res.send(result);
 
         });
+        app.put('/order/:id', async (req, res) => {
+            const id = req.params.id;
+            const updateStatus = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    status: updateStatus.status,
+                    runningOrCompleted: updateStatus.runningOrFinished,
+                    release: updateStatus.release,
+                    cancelledBy: updateStatus.cancelledBy,
+                }
+            };
+
+            const result = await orderCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+
+        
 
 
         app.put('/myreviewfororder/:id', async (req, res) => {
@@ -465,6 +577,9 @@ async function run() {
             const updatedDoc = {
                 $set: {
                     status: withdrawStatus.status,
+                    withdrawnAmount: withdrawStatus.withdrawnAmount,
+                    transactionId: withdrawStatus.transactionId,
+                    note: withdrawStatus.note,
                 }
             };
 
@@ -615,8 +730,132 @@ async function run() {
             res.send({clientSecret: paymentIntent.client_secret})
         });
 
+        /*****
+         * Contact Page
+         * *****/
+         app.post('/contact', async (req, res) => {
+            const contactPage = req.body;
+            const result = await contactCollection.insertOne(contactPage);
+            res.send(result);
+        });
 
-          
+        app.get('/contact', async (req, res) => {
+            const query = {};
+            const cursor = contactCollection.find(query);
+            const contactPage = await cursor.toArray();
+            res.send(contactPage);
+        });
+
+        app.get('/contact/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const contact = await contactCollection.findOne(query);
+            res.send(contact)
+        });
+
+        app.put('/contact/:id', async (req, res) => {
+            const id = req.params.id;
+            const contactPageUpdate = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    contactBanner: contactPageUpdate.contactBanner,
+                    contactText: contactPageUpdate.contactText,
+                    contactEmail: contactPageUpdate.contactEmail,
+                    contactAddress: contactPageUpdate.contactAddress,
+                }
+            };
+
+            const result = await contactCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+
+        /****
+         * Footer Setup
+         * ****/
+
+         app.post('/footer', async (req, res) => {
+            const footer = req.body;
+            const result = await footerCollection.insertOne(footer);
+            res.send(result);
+        });
+
+        app.get('/footer', async (req, res) => {
+            const query = {};
+            const cursor = footerCollection.find(query);
+            const footer = await cursor.toArray();
+            res.send(footer);
+        });
+
+        app.get('/footer/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const footer = await footerCollection.findOne(query);
+            res.send(footer)
+        });
+
+        app.put('/footer/:id', async (req, res) => {
+            const id = req.params.id;
+            const footerUpdate = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    footerLogo: footerUpdate.footerLogo,
+                    footerText: footerUpdate.footerText,
+                    footerEmail: footerUpdate.footerEmail,
+                    footerAddress: footerUpdate.footerAddress,
+                }
+            };
+
+            const result = await footerCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+
+        /****
+         * About Us Page
+         * *****/
+
+         app.post('/about', async (req, res) => {
+            const about = req.body;
+            const result = await aboutCollection.insertOne(about);
+            res.send(result);
+        });
+
+         app.get('/about', async (req, res) => {
+            const query = {};
+            const cursor = aboutCollection.find(query);
+            const about = await cursor.toArray();
+            res.send(about);
+        });
+
+        app.get('/about/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const about = await aboutCollection.findOne(query);
+            res.send(about)
+        });
+
+        app.put('/about/:id', async (req, res) => {
+            const id = req.params.id;
+            const aboutUpdate = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    aboutBannerImg: aboutUpdate.aboutBannerImg,
+                    aboutBannerText: aboutUpdate.aboutBannerText,
+                    aboutContent: aboutUpdate.aboutContent,
+                }
+            };
+
+            const result = await aboutCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
 
     }
     finally {
