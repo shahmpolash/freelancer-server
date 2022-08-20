@@ -34,6 +34,10 @@ async function run() {
         const contactCollection = client.db('freelancerDB').collection('contact');
         const footerCollection = client.db('freelancerDB').collection('footer');
         const aboutCollection = client.db('freelancerDB').collection('about');
+        const balanceCollection = client.db('freelancerDB').collection('balance');
+        const categoryCollection = client.db('freelancerDB').collection('categoris');
+        const logoCollection = client.db('freelancerDB').collection('logo');
+        const bannerCollection = client.db('freelancerDB').collection('banner');
 
         app.get('/service', async (req, res) => {
             const query = {};
@@ -185,6 +189,182 @@ async function run() {
 
         });
 
+        app.post('/categoris', async (req, res) => {
+            const newCategory = req.body;
+            const result = await categoryCollection.insertOne(newCategory);
+            res.send(result);
+        });
+
+        app.get('/categoris', async (req, res) => {
+            const query = {};
+            const cursor = categoryCollection.find(query);
+            const category = await cursor.toArray();
+            res.send(category);
+        });
+
+        app.get('/category', async (req, res) => {
+            const slug = req.query.slug;
+            const query = { slug: slug };
+            const cursor = categoryCollection.find(query);
+            const category = await cursor.toArray();
+            res.send(category);
+        });
+        app.get('/service', async (req, res) => {
+            const slug = req.query.slug;
+            const query = { slug: slug };
+            const cursor = serviceCollection.find(query);
+            const serviceCategory = await cursor.toArray();
+            res.send(serviceCategory);
+        });
+        
+        app.get('/category/:slug', async (req, res) => {
+            const slug = req.query.slug;
+            const query = { slug: slug };
+            const cursor = categoryCollection.find(query);
+            const category = await cursor.toArray();
+            res.send(category);
+        });
+
+        app.get('/category/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const categoryData = await categoryCollection.findOne(query);
+            res.send(categoryData)
+        });
+
+        app.put('/disputesolution/:id', async (req, res) => {
+            const id = req.params.id;
+            const disputeSolution = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    disputeStatus: disputeSolution.disputeStatus,
+                    winner: disputeSolution.winner,
+                    adminNote: disputeSolution.adminNote,  
+                    refundStatus: disputeSolution.refundStatus,  
+                    status: disputeSolution.status,  
+                }
+            };
+
+            const result = await orderCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+        app.put('/disputesolutionforprovider/:id', async (req, res) => {
+            const id = req.params.id;
+            const disputeSolution = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    disputeStatus: disputeSolution.disputeStatus,
+                    winner: disputeSolution.winner,
+                    adminNote: disputeSolution.adminNote,  
+                    releaseStatus: disputeSolution.releaseStatus,  
+                    releaseAmount: disputeSolution.releaseAmount,  
+                    paymentAccepted: disputeSolution.paymentAccepted,  
+                }
+            };
+
+            const result = await orderCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+
+        app.put('/refunded/:id', async (req, res) => {
+            const id = req.params.id;
+            const refundedUpdate = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    refundStatus: refundedUpdate.refundStatus,
+                    refundedTo: refundedUpdate.refundedTo,
+                    refundNote: refundedUpdate.refundNote,
+                    
+                }
+            };
+
+            const result = await orderCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+
+        app.post('/logo', async (req, res) => {
+            const setLogo = req.body;
+            const result = await logoCollection.insertOne(setLogo);
+            res.send(result);
+        });
+
+        app.get('/logo', async (req, res) => {
+            const query = {};
+            const cursor = logoCollection.find(query);
+            const logo = await cursor.toArray();
+            res.send(logo);
+        });
+
+        app.get('/logo/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const logoUpdate = await logoCollection.findOne(query);
+            res.send(logoUpdate)
+        });
+
+        app.put('/logo/:id', async (req, res) => {
+            const id = req.params.id;
+            const logo = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    logoImg: logo.logoImg,                                   
+                }
+            };
+
+            const result = await logoCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+        app.post('/banner', async (req, res) => {
+            const settingBanner = req.body;
+            const result = await bannerCollection.insertOne(settingBanner);
+            res.send(result);
+        });
+
+        app.get('/banner', async (req, res) => {
+            const query = {};
+            const cursor = bannerCollection.find(query);
+            const banner = await cursor.toArray();
+            res.send(banner);
+        });
+
+        app.get('/banner/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const bannerUpdate = await bannerCollection.findOne(query);
+            res.send(bannerUpdate)
+        });
+
+        app.put('/banner/:id', async (req, res) => {
+            const id = req.params.id;
+            const banner = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    bannerHeading: banner.bannerHeading,                                   
+                    bannerSubHeading: banner.bannerSubHeading,                                   
+                    bannerImg: banner.bannerImg,                                   
+                }
+            };
+
+            const result = await bannerCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+
+
         /**
          * Freelancer Profile
         **/
@@ -253,6 +433,43 @@ async function run() {
             res.send(result);
 
         });
+
+
+        app.put('/provider/:id', async (req, res) => {
+            const id = req.params.id;
+            const freelancerBalance = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {       
+                    currentBalance: freelancerBalance.currentBalance,
+                }
+            };
+
+            const result = await freelancerCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+        app.put('/userbalance/:id', async (req, res) => {
+            const id = req.params.id;
+            const balance = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {       
+                    currentBalance: balance.currentBalance,
+                }
+            };
+
+            const result = await freelancerCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+
+
+
+
+
         app.put('/freelancer-status/:id', async (req, res) => {
             const id = req.params.id;
             const providerApprove = req.body;
@@ -365,6 +582,12 @@ async function run() {
             const myOrder = await orderCollection.findOne(query);
             res.send(myOrder)
         });
+        app.get('/order/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const order = await orderCollection.findOne(query);
+            res.send(order)
+        });
 
         app.get('/myorder', async (req, res) => {
             const email = req.query.email;
@@ -405,9 +628,40 @@ async function run() {
             };
 
             const result = await orderCollection.updateOne(filter, updatedDoc, options);
-            res.send(result);
-
+            res.send(result);            
         });
+        app.put('/myserviceorderrejected/:id', async (req, res) => {
+            const id = req.params.id;
+            const updateStatus = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    status: updateStatus.status,
+                    refundStatus: updateStatus.refundStatus,
+                }
+            };
+
+            const result = await orderCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);            
+        });
+
+        app.put('/acceptpaymentfromorder/:id', async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    paymentAccepted: payment.paymentAccepted,                   
+                }
+            };
+
+            const result = await orderCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);            
+        });
+
+        
         app.put('/myserviceorderrequirement/:id', async (req, res) => {
             const id = req.params.id;
             const requirementStatus = req.body;
@@ -454,6 +708,7 @@ async function run() {
                 $set: {
                     status: updateStatus.status,
                     runningOrCompleted: updateStatus.runningOrFinished,
+                    refundStatus: updateStatus.refundStatus,
                     
                 }
             };
@@ -462,6 +717,80 @@ async function run() {
             res.send(result);
 
         });
+        
+        app.put('/myorderdispute/:id', async (req, res) => {
+            const id = req.params.id;
+            const dispute = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    disputeStatus: dispute.disputeStatus,
+                    disputedCreated: dispute.disputedCreated,
+                    clientMessage: dispute.clientMessage,
+                    disputeCreatedDate: dispute.disputeCreatedDate,
+                    clientName: dispute.clientName,
+                    
+                }
+            };
+
+            const result = await orderCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+        app.put('/myserviceorderdispute/:id', async (req, res) => {
+            const id = req.params.id;
+            const dispute = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    disputeStatus: dispute.disputeStatus,
+                    disputedCreated: dispute.disputedCreated,
+                    providerMessage: dispute.providerMessage,
+                    disputeCreatedDate: dispute.disputeCreatedDate,
+                    providerName: dispute.providerName,
+                    
+                }
+            };
+
+            const result = await orderCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+        app.put('/providerdisputereply/:id', async (req, res) => {
+            const id = req.params.id;
+            const providerDisputeReply = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    providerMessage: providerDisputeReply.providerMessage,
+                    
+                }
+            };
+
+            const result = await orderCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+        app.put('/clientdisputereply/:id', async (req, res) => {
+            const id = req.params.id;
+            const clientDisputeReply = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    clientMessage: clientDisputeReply.clientMessage,
+                    
+                }
+            };
+
+            const result = await orderCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+
         app.put('/order/:id', async (req, res) => {
             const id = req.params.id;
             const updateStatus = req.body;
@@ -528,6 +857,8 @@ async function run() {
                 $set: {
                     releaseStatus: releaseStatus.release,
                     releaseAmount: releaseStatus.releaseAmount,
+                    paymentAccepted: releaseStatus.paymentAccepted,
+                    releaseDate: releaseStatus.releaseDate,
                 }
             };
 
@@ -580,6 +911,7 @@ async function run() {
                     withdrawnAmount: withdrawStatus.withdrawnAmount,
                     transactionId: withdrawStatus.transactionId,
                     note: withdrawStatus.note,
+                    processDate: withdrawStatus.processDate,
                 }
             };
 
@@ -807,6 +1139,11 @@ async function run() {
                     footerText: footerUpdate.footerText,
                     footerEmail: footerUpdate.footerEmail,
                     footerAddress: footerUpdate.footerAddress,
+                    facebookURL: footerUpdate.facebookURL,
+                    twitterURL: footerUpdate.twitterURL,
+                    youtubeURL: footerUpdate.youtubeURL,
+                    liniedInURL: footerUpdate.liniedInURL,
+                    copyRight: footerUpdate.copyRight,
                 }
             };
 
